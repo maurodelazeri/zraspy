@@ -23,7 +23,7 @@ int main() {
     struct gpiod_line *line_buzzer;
     struct gpiod_line *line_laser;
 
-    int i, ret;
+    int i, ret, val;
 
     chip = gpiod_chip_open_by_name(chipname);
     if (!chip) {
@@ -70,6 +70,17 @@ int main() {
         perror("Request line_ldr as output failed\n");
         goto release_line;
     }
+
+//    while (true) {
+//        val = gpiod_line_get_value(line_ldr);
+//        if (val < 0) {
+//            perror("Read line_ldr input failed\n");
+//            goto release_line;
+//        }
+//        printf("Intput %d on LDR\n", val);
+//
+//        sleep(1);
+//    }
 
     while (true) {
         ret = gpiod_line_set_value(line_buzzer, 1);
