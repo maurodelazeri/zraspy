@@ -12,14 +12,14 @@ using namespace std;
 int main() {
 
     const char *chipname = "gpiochip0";
-    unsigned int ldr = 23;    // GPIO LDR
+    unsigned int servo = 23;    // GPIO LDR
     unsigned int buzzer = 24;  // GPIO Buzzer
     unsigned int laser = 25;   // GPIO laser
 
     struct timespec ts = {1, 0};
     struct gpiod_line_event event{};
     struct gpiod_chip *chip;
-    struct gpiod_line *line_ldr;
+    struct gpiod_line *line_servo;
     struct gpiod_line *line_buzzer;
     struct gpiod_line *line_laser;
 
@@ -32,9 +32,9 @@ int main() {
         goto end;
     }
 
-    line_ldr = gpiod_chip_get_line(chip, ldr);
-    if (!line_ldr) {
-        perror("Get ldr failed\n");
+    line_servo = gpiod_chip_get_line(chip, servo);
+    if (!line_servo) {
+        perror("Get servo failed\n");
         ret = -1;
         goto close_chip;
     }
@@ -65,9 +65,9 @@ int main() {
         goto release_line;
     }
 
-    ret = gpiod_line_request_output(line_ldr, CONSUMER, 0);
+    ret = gpiod_line_request_output(line_servo, CONSUMER, 0);
     if (ret < 0) {
-        perror("Request line_ldr as output failed\n");
+        perror("Request line_servo as output failed\n");
         goto release_line;
     }
 
@@ -83,6 +83,12 @@ int main() {
 //    }
 
     while (true) {
+        ret = gpiod_line_set_value(line_servo, 1);
+        if (ret < 0) {
+            perror("Set line_servo output failed\n");
+            goto release_line;
+        }
+
         ret = gpiod_line_set_value(line_buzzer, 1);
         if (ret < 0) {
             perror("Set line_buzzer output failed\n");
@@ -96,6 +102,12 @@ int main() {
         }
 
         sleep(1);
+
+        ret = gpiod_line_set_value(line_servo, 0);
+        if (ret < 0) {
+            perror("Set line_servo output failed\n");
+            goto release_line;
+        }
 
         ret = gpiod_line_set_value(line_buzzer, 0);
         if (ret < 0) {
@@ -155,7 +167,7 @@ int main() {
     ret = 0;
 
     release_line:
-    gpiod_line_release(line_ldr);
+    gpiod_line_release(line_servo);
     gpiod_line_release(line_buzzer);
     gpiod_line_release(line_laser);
 
